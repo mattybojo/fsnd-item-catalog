@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Category, CategoryItem, User, Base
 
@@ -42,7 +42,7 @@ class CatalogDbService:
 
     # TODO - how to get the latest items added to the DB
     def get_latest_items(self):
-        return None
+        return self.session.query(CategoryItem).order_by(desc(CategoryItem.id)).all()
 
     def create_item(self, name, description, category_id, user_id):
         item = CategoryItem(name=name,

@@ -1,3 +1,4 @@
 *.pyc
 .idea/
 itemcatalog.db
+.DS_Store

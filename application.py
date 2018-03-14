@@ -230,12 +230,9 @@ def gdisconnect():
 @app.route('/')
 @app.route('/catalog')
 def show_categories():
-    return render_template("catalog.html")
-
-
-@app.route('/base')
-def base():
-	return render_template("base.html")
+    categories = service.get_categories()
+    latest_items = service.get_latest_items()
+    return render_template("catalog.html", categories=categories, items=latest_items)
 
 
 if __name__ == "__main__":
