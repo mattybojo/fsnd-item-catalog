@@ -1,0 +1,27 @@
+{% extends "layout-one_column.html" %}
+
+{% block column1 %}
+<h1 class="section-heading">Add a Category Item</h1>
+<form action="{{url_for('add_category_item')}}" method="POST">
+    <fieldset>
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input id="name" type="text" name="name">
+        </div>
+        <div class="form-group">
+            <label for="description" class="form__label">Description:</label>
+            <textarea id="description" name="description" cols="30" rows="10"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="category">Category:</label>
+            <select id="category" name="category">
+                {% for category in categories %}
+                    <option value="{{category.id}}">{{category.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </fieldset>
+    <input class="btn btn-sm btn-primary" type="submit" value="Save">
+    <a class="btn btn-sm btn-secondary" href="{{url_for('show_categories')}}">Back</a>
+</form>
+{% endblock %}

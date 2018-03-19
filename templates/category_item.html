@@ -1,0 +1,28 @@
+{% extends "layout-one_column.html" %}
+
+{% block column1 %}
+<h1 class="section-heading">{{ item.name }}</h1>
+<div class="catalog-item">
+    <span>{{ item.description }}</span>
+</div>
+
+<div class="text-center">
+    <a href="{{url_for('show_category', category_id=item.category_id )}}">
+        <button class="btn btn-sm btn-info">
+            <i class="fas fa-book"></i> View Category
+        </button>
+    </a>
+    {% if user and creator.id == user.id %}
+        <a href="{{url_for('edit_category_item', category_id=item.category_id, item_id=item.id )}}">
+            <button class="btn btn-sm btn-primary">
+                <i class="fas fa-edit"></i> Edit
+            </button>
+        </a>
+        <a href="{{url_for('delete_category_item', category_id=item.category_id, item_id=item.id )}}">
+            <button class="btn btn-sm btn-danger">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+        </a>
+    {% endif %}
+</div>
+{% endblock %}

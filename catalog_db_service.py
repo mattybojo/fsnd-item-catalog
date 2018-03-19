@@ -11,10 +11,45 @@ class CatalogDbService:
         db_session = sessionmaker(bind=engine)
         self.session = db_session()
 
+    # Debug
+
+    def print_category_by_id(self, id):
+        category = self.get_category_by_id(id)
+        print('Category')
+        print('ID: %s') % category.id
+        print('Name: %s') % category.name
+
+    def print_item_by_id(self, id):
+        item = self.get_item_by_id(id)
+        print('Item')
+        print('ID: %s') % item.id
+        print('Name: %s') % item.name
+        print('Description: %s') % item.description
+        print('User: %s') % item.user_id
+
+    def print_user_by_id(self, id):
+        user = self.get_user_by_id(id)
+        print('User')
+        print('ID: %s') % user.id
+        print('Name: %s') % user.name
+        print('Email: %s') % user.email
+
+    def print_users(self):
+        users = self.get_users()
+        print('Users')
+        for user in users:
+            print('ID: %s') % user.id
+            print('Name: %s') % user.name
+            print('Email: %s') % user.email
+
     # Category
 
     def get_categories(self):
         return self.session.query(Category).all()
+
+    def get_category_by_id(self, id):
+        category = self.session.query(Category).filter_by(id=id).one()
+        return category
 
     def create_category(self, name, user_id):
         category = Category(name=name,
@@ -35,14 +70,16 @@ class CatalogDbService:
     # CategoryItem
 
     def get_item_by_id(self, id):
-        return self.session.query(CategoryItem).filter_by(id=id).all()
+        return self.session.query(CategoryItem).filter_by(id=id).one()
 
     def get_items_by_category_id(self, id):
         return self.session.query(CategoryItem).filter_by(category_id=id).all()
 
-    # TODO - how to get the latest items added to the DB
     def get_latest_items(self):
-        return self.session.query(CategoryItem).order_by(desc(CategoryItem.id)).all()
+        return self.session.query(CategoryItem).order_by(desc(CategoryItem.id)).limit(5).all()
+
+    def get_item_count_per_catalog_id(self, id):
+        return self.session.query(CategoryItem).filter_by(category_id=id).count()
 
     def create_item(self, name, description, category_id, user_id):
         item = CategoryItem(name=name,
@@ -63,8 +100,12 @@ class CatalogDbService:
         self.session.commit()
 
     # User
+
+    def get_users(self):
+        return self.session.query(User).all()
+
     def get_user_by_id(self, id):
-        return self.session.query(User).filter_by(id=id).all()
+        return self.session.query(User).filter_by(id=id).one()
 
     def get_user_id_by_email(self, email):
         user = self.session.query(User).filter_by(email=email).one()

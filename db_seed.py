@@ -1,5 +1,3 @@
-from sqlalchemy_utils import database_exists, drop_database, create_database
-
 from catalog_db_service import CatalogDbService
 
 service = CatalogDbService()

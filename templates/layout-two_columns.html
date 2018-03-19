@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="categories-section catalog-section">
+        {% block column1 %}
+        {% endblock %}
+    </div>
+    <div class="spacer-section"></div>
+    <div class="items-section catalog-section">
+        {% block column2 %}
+        {% endblock %}
+    </div>
+</div>
+{% endblock %}

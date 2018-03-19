@@ -1,14 +1,24 @@
 from flask import Flask, render_template, url_for, request, redirect, jsonify, make_response, flash
 from flask import session as login_session
-import random, string, json, httplib2, requests
 from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
 from catalog_db_service import CatalogDbService
+import random
+import string
+import json
+import httplib2
+import requests
 
 app = Flask(__name__)
 
 CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())['web']['client_id']
 
 service = CatalogDbService()
+
+
+# Helpers
+
+def get_logged_in_user():
+    return service.get_user_by_id(login_session['user_id'])
 
 
 # Login
@@ -18,6 +28,7 @@ def login():
     # Create anti-forgery state token
     state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
     login_session['state'] = state
+    print(state)
 
     return render_template('login.html', STATE=state)
 
@@ -59,7 +70,6 @@ def fbconnect():
         app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
-
 
     # Use token to get user info from API
     userinfo_url = "https://graph.facebook.com/v2.8/me"
@@ -118,7 +128,8 @@ def fbdisconnect():
     facebook_id = login_session['facebook_id']
     # The access token must me included to successfully logout
     access_token = login_session['access_token']
-    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id,access_token)
+    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % \
+          (facebook_id, access_token)
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
     return "you have been logged out"
@@ -232,7 +243,127 @@ def gdisconnect():
 def show_categories():
     categories = service.get_categories()
     latest_items = service.get_latest_items()
-    return render_template("catalog.html", categories=categories, items=latest_items)
+    # service.print_users()
+    if 'username' in login_session:
+        service.print_user_by_id(login_session['user_id'])
+    return render_template("categories.html", categories=categories, items=latest_items)
+
+
+@app.route('/catalog/<int:category_id>')
+@app.route('/catalog/<int:category_id>/items')
+def show_category(category_id):
+    categories = service.get_categories()
+    category = service.get_category_by_id(category_id)
+    category_items = service.get_items_by_category_id(category_id)
+    return render_template("category.html", categories=categories,
+                           items=category_items, category=category)
+
+
+@app.route('/catalog/<int:category_id>/items/<int:item_id>')
+def show_category_item(category_id, item_id):
+    category = service.get_category_by_id(category_id)
+    item = service.get_item_by_id(item_id)
+    if 'username' in login_session:
+        user = get_logged_in_user()
+    else:
+        user = None
+    print("IDs")
+    print('%s') % item.user.id
+    print('%s') % user.id
+    return render_template("category_item.html", item=item,
+                           category_name=category.name, creator=item.user,
+                           user=user)
+
+
+@app.route('/catalog/<int:category_id>/items/<int:item_id>/edit', methods=['GET', 'POST'])
+def edit_category_item(category_id, item_id):
+    # Check if user logged in
+    if 'username' not in login_session:
+        return redirect('/login')
+
+    categories = service.get_categories()
+    item = service.get_item_by_id(item_id)
+
+    # Check if user is the item creator
+    if item.user.id != login_session['user_id']:
+        return redirect('/login')
+
+    if request.method == 'POST':
+        if request.form['name']:
+            item.name = request.form['name']
+        if request.form['description']:
+            item.description = request.form['description']
+        if request.form['category']:
+            item.category_id = request.form['category']
+        service.update_item(item)
+        return redirect(
+            url_for('show_category_item', category_id=item.category_id,
+                    item_id=item.id))
+    else:  # GET
+        return render_template("edit_category_item.html", item=item,
+                               categories=categories)
+
+
+@app.route('/catalog/<int:category_id>/items/<int:item_id>/delete', methods=['GET', 'POST'])
+def delete_category_item(category_id, item_id):
+    # Check if user logged in
+    if 'username' not in login_session:
+        return redirect('/login')
+
+    item = service.get_item_by_id(item_id)
+
+    # Check if user is the item creator
+    if item.user.id != login_session['user_id']:
+        return redirect('/login')
+
+    if request.method == 'POST':
+        service.delete_item_by_id(item.id)
+        return redirect(
+            url_for('show_category', category_id=item.category_id))
+    else:  # GET
+        return render_template("delete_category_item.html", item=item,
+                               category_name=item.category.name)
+
+
+@app.route('/catalog/addItem', methods=['GET', 'POST'])
+def add_category_item():
+    # Check if user logged in
+    if 'username' not in login_session:
+        return redirect('/login')
+
+    categories = service.get_categories()
+
+    if request.method == 'POST':
+        if request.form['name'] and request.form['description']:
+            service.create_item(name=request.form['name'],
+                                description=request.form['description'],
+                                category_id=request.form['category'],
+                                user_id=login_session['user_id'])
+        return redirect(
+            url_for('show_categories'))
+    else:  # GET
+        return render_template("add_category_item.html", categories=categories)
+
+
+# JSON
+
+@app.route('/catalog/JSON')
+def show_categories_json():
+    categories = service.get_categories()
+    return jsonify(categories=[category.serialize for category in categories])
+
+
+@app.route('/catalog/<int:category_id>/JSON')
+@app.route('/catalog/<int:category_id>/items/JSON')
+def show_category_json(category_id):
+    items = service.get_items_by_category_id(category_id)
+    return jsonify(items=[item.serialize for item in items])
+
+
+@app.route('/catalog/<int:category_id>/items/<int:item_id>/JSON')
+def show_category_item_json(category_id, item_id):
+    item = service.get_item_by_id(item_id)
+    return jsonify(item=[item.serialize])
 
 
 if __name__ == "__main__":

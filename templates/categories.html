@@ -1,0 +1,24 @@
+{% extends "layout-two_columns.html" %}
+
+{% block column1 %}
+<h1 class="section-heading">Categories</h1>
+{% for category in categories %}
+<div class="catalog-item">
+    <a href="{{url_for('show_category', category_id=category.id)}}">
+        <span>{{category.name}}</span>
+    </a>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block column2 %}
+<h1 class="section-heading">Latest Items</h1>
+{% for item in items %}
+    <div class="catalog-item">
+        <a href="{{url_for('show_category_item', category_id=item.category_id, item_id=item.id)}}">
+            <span>{{item.name}}</span>
+        </a>
+        <span>({{ item.category.name }})</span>
+    </div>
+{% endfor %}
+{% endblock %}
