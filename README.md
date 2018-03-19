@@ -1,15 +1,47 @@
-Place your catalog project in this directory.
+# Udacity Item Catalog
 
-Steps
-1 - Design model.py (DB structure)
-	User
-2 - Implement login backend API (see /veggie_tester for a starting point)
-3 - Create a DB seed file to populate DB	
-4 - Implement front-end (see /oauth/project.py for ideas to allow only the creator to edit/delete items)
-5 - Implement CSS
+## About the project
 
+This is my implementation for the Item Catalog project for the
+Udacity Full Stack Nanodegree (FSND) course.
 
-Lorenzo advice:
-“Personally, I usually start with the database layout so that the database is modelling the information the way I want. Then I go ahead and add the backend, the Flask code, the Python code, and then I move on to the frontend where I then receive feedback on the frontend where I use the feedback to make it more stylish and elegant and presentable with everything else already in place. This is just me though, it varies from developer to developer.”
+The Item Catalog is a web application that provides a list of items
+within a variety of categories as well as provides a third-party user
+registration and authentication system. Registered users will have the
+ability to post, edit and delete their own items. Users will be able
+to login using either Google or Facebook.
 
-Udacity reference: Lesson 4 of Full Stack Foundations
+## Requirements
+This project was developed and tested using the following:
+  * [Python2](https://www.python.org/)
+  * [Vagrant](https://www.vagrantup.com/)
+  * [VirtualBox](https://www.virtualbox.org/)
+
+Users will also need either a Google or Facebook account to login and
+access the full range of features.
+
+## Instructions:
+
+  1. Download and install Python.
+  2. Download and install VirtualBox following the instructions on the site.
+  3. Download and install Vagrant following the instructions on the site.
+  4. Download or clone this repository into the /vagrant/catalog directory.
+  5. Run `vagrant up` from the repo directory.  This may take a few minutes.
+  6. Run `vagrant ssh` from the repo directory.
+  7. Change directory to the catalog directory:
+  ```
+  $ cd /vagrant/catalog
+  ```
+  8. Create the application database using the following command:
+  ```
+  $ python database_setup.py
+  ```
+  9. Seed the database using the following command:
+  ```
+  $ python db_seed.py
+  ```
+  10. Run the application server using the following command:
+  ```
+  $ python application.py
+  ```
+  11. On your host machine, open your favorite browser and navigate to `http://localhost:5000/`.
