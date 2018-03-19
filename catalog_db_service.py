@@ -76,10 +76,12 @@ class CatalogDbService:
         return self.session.query(CategoryItem).filter_by(category_id=id).all()
 
     def get_latest_items(self):
-        return self.session.query(CategoryItem).order_by(desc(CategoryItem.id)).limit(5).all()
+        return self.session.query(CategoryItem)\
+            .order_by(desc(CategoryItem.id)).limit(5).all()
 
     def get_item_count_per_catalog_id(self, id):
-        return self.session.query(CategoryItem).filter_by(category_id=id).count()
+        return self.session.query(CategoryItem)\
+            .filter_by(category_id=id).count()
 
     def create_item(self, name, description, category_id, user_id):
         item = CategoryItem(name=name,
