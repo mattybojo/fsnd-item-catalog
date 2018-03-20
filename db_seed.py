@@ -73,10 +73,11 @@ service.create_item(name="Forrest Gump",
                     perspective of an Alabama man with an IQ of 75.""",
                     category_id=category3_id, user_id=user1_id)
 
-# Items for Documentaries
+# Items for Documentaries -- empty category
 category4_id = service.create_category(name="Documentary Movies",
                                        user_id=user1_id)
 
+# List all created categories
 categories = service.get_categories()
 for category in categories:
     print "Category: " + category.name

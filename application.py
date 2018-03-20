@@ -23,7 +23,7 @@ def get_logged_in_user():
     return service.get_user_by_id(login_session['user_id'])
 
 
-# Login
+# Login/logout
 
 @app.route('/login')
 def login():
@@ -258,9 +258,7 @@ def gdisconnect():
 def show_categories():
     categories = service.get_categories()
     latest_items = service.get_latest_items()
-    # service.print_users()
-    if 'username' in login_session:
-        service.print_user_by_id(login_session['user_id'])
+
     return render_template("categories.html", categories=categories,
                            items=latest_items)
 
@@ -279,13 +277,13 @@ def show_category(category_id):
 def show_category_item(category_id, item_id):
     category = service.get_category_by_id(category_id)
     item = service.get_item_by_id(item_id)
+
+    # Check if user is logged in
     if 'username' in login_session:
         user = get_logged_in_user()
     else:
         user = None
-    print("IDs")
-    print('%s') % item.user.id
-    print('%s') % user.id
+
     return render_template("category_item.html", item=item,
                            category_name=category.name, creator=item.user,
                            user=user)
@@ -294,7 +292,8 @@ def show_category_item(category_id, item_id):
 @app.route('/catalog/<int:category_id>/items/<int:item_id>/edit',
            methods=['GET', 'POST'])
 def edit_category_item(category_id, item_id):
-    # Check if user logged in
+
+    # Check if user is logged in
     if 'username' not in login_session:
         return redirect('/login')
 
@@ -306,6 +305,7 @@ def edit_category_item(category_id, item_id):
         return redirect('/login')
 
     if request.method == 'POST':
+        # Process form data
         if request.form['name']:
             item.name = request.form['name']
         if request.form['description']:
@@ -313,6 +313,7 @@ def edit_category_item(category_id, item_id):
         if request.form['category']:
             item.category_id = request.form['category']
         service.update_item(item)
+
         return redirect(
             url_for('show_category_item', category_id=item.category_id,
                     item_id=item.id))
@@ -324,7 +325,8 @@ def edit_category_item(category_id, item_id):
 @app.route('/catalog/<int:category_id>/items/<int:item_id>/delete',
            methods=['GET', 'POST'])
 def delete_category_item(category_id, item_id):
-    # Check if user logged in
+
+    # Check if user is logged in
     if 'username' not in login_session:
         return redirect('/login')
 
@@ -335,6 +337,7 @@ def delete_category_item(category_id, item_id):
         return redirect('/login')
 
     if request.method == 'POST':
+        # Delete the item
         service.delete_item_by_id(item.id)
         return redirect(
             url_for('show_category', category_id=item.category_id))
@@ -345,13 +348,15 @@ def delete_category_item(category_id, item_id):
 
 @app.route('/catalog/addItem', methods=['GET', 'POST'])
 def add_category_item():
-    # Check if user logged in
+
+    # Check if user is logged in
     if 'username' not in login_session:
         return redirect('/login')
 
     categories = service.get_categories()
 
     if request.method == 'POST':
+        # Process form data
         if request.form['name'] and request.form['description']:
             service.create_item(name=request.form['name'],
                                 description=request.form['description'],

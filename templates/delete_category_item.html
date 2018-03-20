@@ -3,8 +3,12 @@
 {% block column1 %}
 <h1 class="section-heading">Delete {{ item.name }}?</h1>
 <p>Are you sure you want to delete?</p>
-<form action="{{url_for('delete_category_item', category_id=item.category_id, item_id=item.id )}}" method="POST">
+<form action="{{url_for('delete_category_item', category_id=item.category_id, item_id=item.id )}}"
+      method="POST">
     <input class="btn btn-sm btn-danger" type="submit" value="Delete">
-    <a class="btn btn-sm btn-secondary" href="{{url_for('show_category_item', category_id=item.category_id, item_id=item.id )}}">Back</a>
+    <a class="btn btn-sm btn-secondary"
+       href="{{url_for('show_category_item', category_id=item.category_id, item_id=item.id )}}">
+        Back
+    </a>
 </form>
 {% endblock %}

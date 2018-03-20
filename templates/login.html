@@ -35,9 +35,12 @@
 <script>
 	function signInCallback(authResult) {
 		if (authResult['code']) {
-			// Hide the sign-in button now that the user is authorized
+			// Hide the sign-in buttons now that the user is authorized
 			$('#sign-in-buttons').hide();
-			// Send the one-time-use code to the server, if the server responds, write a 'login successful' message to the web page and then redirect back to the main restaurants page
+			/* Send the one-time-use code to the server, if the server
+			 * responds, write a 'login successful' message to the web page
+			 * and then redirect back to the main catalog page
+			 */
 			$.ajax({
 				type: 'POST',
 				url: '/gconnect?state={{STATE}}',
@@ -50,16 +53,19 @@
 						$('#login').html('Logging in...');
 						window.location.href = "/catalog";
 					} else if (authResult['error']) {
-						console.log('There was an error: ' + authResult['error']);
+						console.log('There was an error: '
+							+ authResult['error']);
 						$('#sign-in-buttons').show();
 					} else {
-						$('#login').html('Failed to make a server-side call. Check your configuration and console.');
+						$('#login').html('Failed to make a server-side ' +
+							'call. Check your configuration and console.');
 						$('#sign-in-buttons').show();
 					}
 				},
 				error: function(result) {
 				    console.log(result);
-				    $('#login').html('There was an error logging in. Please try again later.');
+				    $('#login').html('There was an error logging in. ' +
+						'Please try again later.');
 				    $('#sign-in-buttons').show();
 				}
 			});
@@ -104,19 +110,22 @@
 						$('#login').html('Logging in...');
 						window.location.href = "/catalog";
 					} else {
-						$('#login').html('Failed to make a server-side call. Check your configuration and console.');
+						$('#login').html('Failed to make a server-side ' +
+							'call. Check your configuration and console.');
 						$('#sign-in-buttons').show();
 					}
 				},
 				error: function(result) {
 				    console.log(result);
-				    $('#login').html('There was an error logging in. Please try again later.');
+				    $('#login').html('There was an error logging in. ' +
+						'Please try again later.');
 				    $('#sign-in-buttons').show();
 				}
 			});
 		});
 	}
 </script>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
+</script>
 <script src="//apis.google.com/js/platform.js"></script>
 {% endblock %}

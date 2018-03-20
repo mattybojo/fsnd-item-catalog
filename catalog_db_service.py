@@ -4,43 +4,14 @@ from database_setup import Category, CategoryItem, User, Base
 
 
 class CatalogDbService:
+    """ Utility functions to extract the data from the database """
 
     def __init__(self):
+        """ Create database connection """
         engine = create_engine('sqlite:///itemcatalog.db')
         Base.metadata.bind = engine
         db_session = sessionmaker(bind=engine)
         self.session = db_session()
-
-    # Debug
-
-    def print_category_by_id(self, id):
-        category = self.get_category_by_id(id)
-        print('Category')
-        print('ID: %s') % category.id
-        print('Name: %s') % category.name
-
-    def print_item_by_id(self, id):
-        item = self.get_item_by_id(id)
-        print('Item')
-        print('ID: %s') % item.id
-        print('Name: %s') % item.name
-        print('Description: %s') % item.description
-        print('User: %s') % item.user_id
-
-    def print_user_by_id(self, id):
-        user = self.get_user_by_id(id)
-        print('User')
-        print('ID: %s') % user.id
-        print('Name: %s') % user.name
-        print('Email: %s') % user.email
-
-    def print_users(self):
-        users = self.get_users()
-        print('Users')
-        for user in users:
-            print('ID: %s') % user.id
-            print('Name: %s') % user.name
-            print('Email: %s') % user.email
 
     # Category
 
