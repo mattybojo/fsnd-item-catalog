@@ -1,3 +1,5 @@
+"""This module contains utility methods to extract data from the database """
+
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Category, CategoryItem, User, Base
@@ -81,8 +83,11 @@ class CatalogDbService:
         return self.session.query(User).filter_by(id=id).one()
 
     def get_user_id_by_email(self, email):
-        user = self.session.query(User).filter_by(email=email).one()
-        return user.id
+        user = self.session.query(User).filter_by(email=email).one_or_none()
+        if user is None:
+            return None
+        else:
+            return user.id
 
     def create_user(self, name, email, picture):
         user = User(name=name,
