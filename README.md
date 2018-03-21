@@ -32,16 +32,20 @@ access the full range of features.
   ```
   $ cd /vagrant/catalog
   ```
-  8. Create the application database using the following command:
+  8. Install all python dependencies with the following command:
+  ```
+  $ pip install -r requirements.txt
+  ```
+  9. Create the application database using the following command:
   ```
   $ python database_setup.py
   ```
-  9. Seed the database using the following command:
+  10. Seed the database using the following command:
   ```
   $ python db_seed.py
   ```
-  10. Run the application server using the following command:
+  11. Run the application server using the following command:
   ```
   $ python application.py
   ```
-  11. On your host machine, open your favorite browser and navigate to `http://localhost:5000/`.
+  12. On your host machine, open your favorite browser and navigate to `http://localhost:5000/`.
