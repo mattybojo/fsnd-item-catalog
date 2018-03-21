@@ -1,8 +1,11 @@
+""" This module contains the backend logic for the Item Catalog project """
+
 from flask import Flask, render_template, url_for, request, redirect, \
     jsonify, make_response, flash
 from flask import session as login_session
 from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
 from catalog_db_service import CatalogDbService
+from functools import wraps
 import random
 import string
 import json
@@ -20,6 +23,9 @@ service = CatalogDbService()
 # Helpers
 
 def get_logged_in_user():
+    """
+        Utility function to retrieve the currently logged in user
+    """
     return service.get_user_by_id(login_session['user_id'])
 
 
@@ -27,17 +33,22 @@ def get_logged_in_user():
 
 @app.route('/login')
 def login():
+    """
+        Generates a random CSRF token and then renders the login page
+    """
     # Create anti-forgery state token
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
-    print(state)
 
     return render_template('login.html', STATE=state)
 
 
 @app.route('/logout')
 def logout():
+    """
+        Logs the user out of the application
+    """
     if login_session['provider'] == 'facebook':
         fbdisconnect()
         del login_session['facebook_id']
@@ -58,12 +69,14 @@ def logout():
 
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
+    """
+        Handles user login if the user selected Facebook
+    """
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     access_token = request.data
-    print "access token received %s " % access_token
 
     app_id = json.loads(open('fb_client_secrets.json', 'r').read())[
         'web']['app_id']
@@ -91,8 +104,6 @@ def fbconnect():
           '&fields=name,id,email' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
-    # print "url sent for API access:%s"% url
-    # print "API JSON result: %s" % result
     data = json.loads(result)
     login_session['provider'] = 'facebook'
     login_session['username'] = data["name"]
@@ -133,6 +144,9 @@ def fbconnect():
 
 @app.route('/fbdisconnect')
 def fbdisconnect():
+    """
+        Handles user logout if the user used the Facebook API to login
+    """
     facebook_id = login_session['facebook_id']
     # The access token must me included to successfully logout
     access_token = login_session['access_token']
@@ -145,6 +159,9 @@ def fbdisconnect():
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
+    """
+        Handles user login if the user selected Google Sign In
+    """
     # Validate anti-forgery state token
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
@@ -190,7 +207,6 @@ def gconnect():
     if result['issued_to'] != CLIENT_ID:
         response = make_response(json.dumps(
             "Token's client ID does not match app's."), 401)
-        print "Token's client ID does not match app's."
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -230,6 +246,9 @@ def gconnect():
 
 @app.route('/gdisconnect')
 def gdisconnect():
+    """
+        Handles user logout if the user used the Google Sign In API to login
+    """
     # Only disconnect a connected user.
     access_token = login_session.get('access_token')
 
@@ -256,6 +275,9 @@ def gdisconnect():
 @app.route('/')
 @app.route('/catalog')
 def show_categories():
+    """
+        Shows all categories to the user as well as latest 5 items
+    """
     categories = service.get_categories()
     latest_items = service.get_latest_items()
 
@@ -266,6 +288,9 @@ def show_categories():
 @app.route('/catalog/<int:category_id>')
 @app.route('/catalog/<int:category_id>/items')
 def show_category(category_id):
+    """
+        Shows all items within a user selected category
+    """
     categories = service.get_categories()
     category = service.get_category_by_id(category_id)
     category_items = service.get_items_by_category_id(category_id)
@@ -275,6 +300,9 @@ def show_category(category_id):
 
 @app.route('/catalog/<int:category_id>/items/<int:item_id>')
 def show_category_item(category_id, item_id):
+    """
+        Shows details about a specific user selected item
+    """
     category = service.get_category_by_id(category_id)
     item = service.get_item_by_id(item_id)
 
@@ -292,7 +320,9 @@ def show_category_item(category_id, item_id):
 @app.route('/catalog/<int:category_id>/items/<int:item_id>/edit',
            methods=['GET', 'POST'])
 def edit_category_item(category_id, item_id):
-
+    """
+        Allow the creator to edit the item's details
+    """
     # Check if user is logged in
     if 'username' not in login_session:
         return redirect('/login')
@@ -325,7 +355,9 @@ def edit_category_item(category_id, item_id):
 @app.route('/catalog/<int:category_id>/items/<int:item_id>/delete',
            methods=['GET', 'POST'])
 def delete_category_item(category_id, item_id):
-
+    """
+        Allow the creator to delete the item
+    """
     # Check if user is logged in
     if 'username' not in login_session:
         return redirect('/login')
@@ -348,7 +380,9 @@ def delete_category_item(category_id, item_id):
 
 @app.route('/catalog/addItem', methods=['GET', 'POST'])
 def add_category_item():
-
+    """
+        Allow the user to create a new item
+    """
     # Check if user is logged in
     if 'username' not in login_session:
         return redirect('/login')
@@ -372,6 +406,9 @@ def add_category_item():
 
 @app.route('/catalog/JSON')
 def show_categories_json():
+    """
+        Return the JSON for all of the categories
+    """
     categories = service.get_categories()
     return jsonify(categories=[category.serialize for category in categories])
 
@@ -379,12 +416,18 @@ def show_categories_json():
 @app.route('/catalog/<int:category_id>/JSON')
 @app.route('/catalog/<int:category_id>/items/JSON')
 def show_category_json(category_id):
+    """
+        Return the JSON for all of the items within a selected category
+    """
     items = service.get_items_by_category_id(category_id)
     return jsonify(items=[item.serialize for item in items])
 
 
 @app.route('/catalog/<int:category_id>/items/<int:item_id>/JSON')
 def show_category_item_json(category_id, item_id):
+    """
+        Return the JSON for a specified item
+    """
     item = service.get_item_by_id(item_id)
     return jsonify(item=[item.serialize])
 
